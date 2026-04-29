@@ -2,64 +2,23 @@
 venv/
 env/
 ENV/
-env.bak/
-venv.bak/
+backend/venv/
+backend/__pycache__/
+
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Python cache
 __pycache__/
 *.py[cod]
 *.so
-*.egg
-*.egg-info/
-dist/
-build/
 
-# Python
-*.pyc
-*.pyo
-*.pyd
-.Python
-pip-log.txt
-pip-delete-this-directory.txt
-.pytest_cache/
-.coverage
-.tox/
-.mypy_cache/
-
-# Node / Frontend
-node_modules/
-npm-debug.log
-yarn-debug.log
-yarn-error.log
-dist/
-build/
-.DS_Store
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Model files (optional - jika terlalu besar)
+# Model files (opsional - bisa ditaruh di release)
 *.pth
 *.pt
-*.h5
-*.hdf5
+backend/models/*.pth
 
-# Backend specific
-backend/venv/
-backend/__pycache__/
-backend/.env
-
-# Frontend specific
-frontend/node_modules/
-frontend/dist/
-frontend/.env
-
-# Logs
-*.log
-logs/
-
-# OS
-Thumbs.db
+# OS files
 .DS_Store
+Thumbs.db
