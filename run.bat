@@ -17,9 +17,15 @@ echo ╚════════════════════════
 echo.
 
 :: ============================================
+:: SET VARIABLES
+:: ============================================
+set MODEL_URL=https://github.com/YOUR_USERNAME/YOUR_REPO/releases/download/v1.0.0/best_waste_classifier_mobilenet.pth
+set MODEL_PATH=backend\models\best_waste_classifier_mobilenet.pth
+
+:: ============================================
 :: CHECK BACKEND INSTALLATION
 :: ============================================
-echo [STEP 1/5] Checking Backend Installation...
+echo [STEP 1/6] Checking Backend Installation...
 echo ----------------------------------------
 
 cd backend
@@ -51,7 +57,7 @@ if %BACKEND_INSTALLED%==1 (
 :: ============================================
 if %BACKEND_INSTALLED%==0 (
     echo.
-    echo [STEP 2/5] Installing Backend...
+    echo [STEP 2/6] Installing Backend...
     echo ----------------------------------------
     
     :: Cek Python
@@ -66,7 +72,7 @@ if %BACKEND_INSTALLED%==0 (
     
     echo [✓] Python detected
     
-    :: Hapus venv lama jika ada (corrupt)
+    :: Hapus venv lama jika ada
     if exist "venv" (
         echo [INFO] Removing old virtual environment...
         rmdir /s /q venv
@@ -98,7 +104,7 @@ if %BACKEND_INSTALLED%==0 (
     echo [✓] Backend installation complete!
 ) else (
     echo.
-    echo [STEP 2/5] Backend already installed - SKIPPING
+    echo [STEP 2/6] Backend already installed - SKIPPING
     echo ----------------------------------------
     echo [✓] Backend is ready to use
 )
@@ -109,7 +115,7 @@ cd ..
 :: CHECK FRONTEND INSTALLATION
 :: ============================================
 echo.
-echo [STEP 3/5] Checking Frontend Installation...
+echo [STEP 3/6] Checking Frontend Installation...
 echo ----------------------------------------
 
 cd frontend
@@ -128,7 +134,7 @@ if exist "node_modules" (
 :: ============================================
 if %FRONTEND_INSTALLED%==0 (
     echo.
-    echo [STEP 4/5] Installing Frontend...
+    echo [STEP 4/6] Installing Frontend...
     echo ----------------------------------------
     
     :: Cek Node.js
@@ -153,7 +159,7 @@ if %FRONTEND_INSTALLED%==0 (
     echo [✓] Frontend installation complete!
 ) else (
     echo.
-    echo [STEP 4/5] Frontend already installed - SKIPPING
+    echo [STEP 4/6] Frontend already installed - SKIPPING
     echo ----------------------------------------
     echo [✓] Frontend is ready to use
 )
@@ -161,26 +167,39 @@ if %FRONTEND_INSTALLED%==0 (
 cd ..
 
 :: ============================================
-:: CHECK MODEL FILE
+:: DOWNLOAD MODEL FILE (if missing)
 :: ============================================
 echo.
-echo [STEP 5/5] Checking Model File...
+echo [STEP 5/6] Checking Model File...
 echo ----------------------------------------
 
-if exist "backend\models\best_waste_classifier_mobilenet.pth" (
+if exist "%MODEL_PATH%" (
     echo [✓] Model file found
 ) else (
-    echo [⚠] WARNING: Model file not found!
+    echo [⚠] Model file not found!
     echo.
-    echo You need to place the model file at:
-    echo backend\models\best_waste_classifier_mobilenet.pth
-    echo.
-    echo Without the model, detection will not work!
-    echo.
-    echo Options:
-    echo 1. Train the model using training/train.py
-    echo 2. Download from release page
-    echo.
+    echo [INFO] Attempting to download model from GitHub Releases...
+    
+    :: Buat folder models jika belum ada
+    if not exist "backend\models" mkdir backend\models
+    
+    :: Download menggunakan PowerShell
+    powershell -Command "Invoke-WebRequest -Uri '%MODEL_URL%' -OutFile '%MODEL_PATH%'"
+    
+    if errorlevel 1 (
+        echo.
+        echo [ERROR] Failed to download model automatically!
+        echo.
+        echo Please download manually from:
+        echo https://github.com/YOUR_USERNAME/YOUR_REPO/releases
+        echo.
+        echo Then place the file at:
+        echo %MODEL_PATH%
+        echo.
+        pause
+    ) else (
+        echo [✓] Model downloaded successfully!
+    )
 )
 
 :: ============================================
@@ -223,12 +242,6 @@ echo ║                                                          ║
 echo ║  📋 API Docs: http://localhost:8000/docs                 ║
 echo ║                                                          ║
 echo ╚══════════════════════════════════════════════════════════╝
-echo.
-echo [INFO] Two new windows have been opened:
-echo   - Backend Server (Python/FastAPI)
-echo   - Frontend Server (React/Vite)
-echo.
-echo [INFO] To stop the servers, close both windows or run stop.bat
 echo.
 echo Press any key to close this launcher...
 pause > nul
