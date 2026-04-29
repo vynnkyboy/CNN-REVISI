@@ -1,247 +1,221 @@
 @echo off
-title Waste Detection System - Complete Setup & Launch
+title Waste Detector - First Time Setup
 color 0A
 
-:: ============================================
-:: WASTE DETECTION SYSTEM - AUTO SETUP & LAUNCH
-:: ============================================
-
+echo ╔════════════════════════════════════════════════════════════════════╗
+echo ║                                                                    ║
+echo ║           ♻️  WASTE DETECTION SYSTEM  ♻️                           ║
+echo ║                                                                    ║
+echo ║              First Time Setup - Auto Install                       ║
+echo ║                                                                    ║
+echo ╚════════════════════════════════════════════════════════════════════╝
 echo.
-echo ╔══════════════════════════════════════════════════════════╗
-echo ║                                                          ║
-echo ║      ♻️  WASTE DETECTION SYSTEM  ♻️                       ║
-echo ║                                                          ║
-echo ║         Auto Setup & Launch Script                       ║
-echo ║                                                          ║
-echo ╚══════════════════════════════════════════════════════════╝
+echo [INFO] This script will automatically:
+echo        1. Remove old venv (if exists)
+echo        2. Create new Python virtual environment
+echo        3. Install all backend dependencies
+echo        4. Install all frontend dependencies
+echo        5. Download model file (if needed)
+echo        6. Start the application
 echo.
 
-:: ============================================
-:: SET VARIABLES
-:: ============================================
-set MODEL_URL=https://github.com/YOUR_USERNAME/YOUR_REPO/releases/download/v1.0.0/best_waste_classifier_mobilenet.pth
-set MODEL_PATH=backend\models\best_waste_classifier_mobilenet.pth
+set /p CONFIRM="Press ENTER to start or 'q' to quit: "
+if /i "%CONFIRM%"=="q" exit /b
 
 :: ============================================
-:: CHECK BACKEND INSTALLATION
+:: STEP 1: CLEAN UP OLD FILES
 :: ============================================
-echo [STEP 1/6] Checking Backend Installation...
+echo.
+echo [STEP 1/6] Cleaning up old virtual environments...
+echo ----------------------------------------
+
+if exist "backend\venv" (
+    echo [INFO] Removing old backend venv...
+    rmdir /s /q backend\venv
+)
+
+if exist "frontend\node_modules" (
+    echo [INFO] Removing old node_modules...
+    rmdir /s /q frontend\node_modules
+)
+
+echo [✓] Cleanup complete
+
+:: ============================================
+:: STEP 2: INSTALL BACKEND
+:: ============================================
+echo.
+echo [STEP 2/6] Installing Backend...
 echo ----------------------------------------
 
 cd backend
 
-:: Cek apakah virtual environment sudah ada
-if exist "venv\Scripts\python.exe" (
-    echo [✓] Virtual environment found
-    set BACKEND_INSTALLED=1
-) else (
-    echo [✗] Virtual environment not found
-    set BACKEND_INSTALLED=0
+:: Check Python
+python --version > nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Python not found!
+    echo.
+    echo Please install Python 3.9 - 3.11
+    echo Download: https://www.python.org/downloads/
+    echo.
+    pause
+    exit /b 1
 )
 
-:: Cek apakah dependencies sudah terinstall
-if %BACKEND_INSTALLED%==1 (
-    call venv\Scripts\activate.bat > nul 2>&1
-    pip show fastapi > nul 2>&1
-    if errorlevel 1 (
-        echo [✗] Dependencies not installed
-        set BACKEND_INSTALLED=0
-    ) else (
-        echo [✓] Dependencies installed
-    )
-    call deactivate > nul 2>&1
-)
+:: Create new venv
+echo [1/3] Creating virtual environment...
+python -m venv venv
 
-:: ============================================
-:: INSTALL BACKEND IF NEEDED
-:: ============================================
-if %BACKEND_INSTALLED%==0 (
-    echo.
-    echo [STEP 2/6] Installing Backend...
-    echo ----------------------------------------
-    
-    :: Cek Python
-    python --version > nul 2>&1
-    if errorlevel 1 (
-        echo [ERROR] Python not found!
-        echo Please install Python 3.9 - 3.11 first
-        echo Download from: https://www.python.org/downloads/
-        pause
-        exit /b 1
-    )
-    
-    echo [✓] Python detected
-    
-    :: Hapus venv lama jika ada
-    if exist "venv" (
-        echo [INFO] Removing old virtual environment...
-        rmdir /s /q venv
-    )
-    
-    :: Buat virtual environment baru
-    echo [1/4] Creating virtual environment...
-    python -m venv venv
-    
-    :: Aktivasi venv
-    echo [2/4] Activating virtual environment...
-    call venv\Scripts\activate.bat
-    
-    :: Upgrade pip
-    echo [3/4] Upgrading pip...
-    python -m pip install --upgrade pip
-    
-    :: Install dependencies
-    echo [4/4] Installing dependencies...
-    pip install -r requirements.txt
-    
-    :: Deactivate venv
-    call deactivate
-    
-    :: Buat folder models jika belum ada
-    if not exist "models" mkdir models
-    
-    echo.
-    echo [✓] Backend installation complete!
-) else (
-    echo.
-    echo [STEP 2/6] Backend already installed - SKIPPING
-    echo ----------------------------------------
-    echo [✓] Backend is ready to use
-)
+:: Activate and install
+echo [2/3] Installing dependencies...
+call venv\Scripts\activate.bat
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+call deactivate
 
+echo [3/3] Backend ready!
 cd ..
 
 :: ============================================
-:: CHECK FRONTEND INSTALLATION
+:: STEP 3: INSTALL FRONTEND
 :: ============================================
 echo.
-echo [STEP 3/6] Checking Frontend Installation...
+echo [STEP 3/6] Installing Frontend...
 echo ----------------------------------------
 
 cd frontend
 
-:: Cek apakah node_modules sudah ada
-if exist "node_modules" (
-    echo [✓] Node modules found
-    set FRONTEND_INSTALLED=1
-) else (
-    echo [✗] Node modules not found
-    set FRONTEND_INSTALLED=0
+:: Check Node.js
+node --version > nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Node.js not found!
+    echo.
+    echo Please install Node.js
+    echo Download: https://nodejs.org/
+    echo.
+    pause
+    exit /b 1
 )
 
-:: ============================================
-:: INSTALL FRONTEND IF NEEDED
-:: ============================================
-if %FRONTEND_INSTALLED%==0 (
-    echo.
-    echo [STEP 4/6] Installing Frontend...
-    echo ----------------------------------------
-    
-    :: Cek Node.js
-    node --version > nul 2>&1
-    if errorlevel 1 (
-        echo [ERROR] Node.js not found!
-        echo Please install Node.js first
-        echo Download from: https://nodejs.org/
-        pause
-        exit /b 1
-    )
-    
-    echo [✓] Node.js detected
-    
-    :: Install dependencies
-    echo [1/2] Installing npm dependencies...
-    call npm install
-    
-    echo [2/2] Installation complete!
-    
-    echo.
-    echo [✓] Frontend installation complete!
-) else (
-    echo.
-    echo [STEP 4/6] Frontend already installed - SKIPPING
-    echo ----------------------------------------
-    echo [✓] Frontend is ready to use
-)
+:: Install dependencies
+echo [1/2] Installing npm packages...
+call npm install
 
+echo [2/2] Frontend ready!
 cd ..
 
 :: ============================================
-:: DOWNLOAD MODEL FILE (if missing)
+:: STEP 4: CHECK MODEL FILE
 :: ============================================
 echo.
-echo [STEP 5/6] Checking Model File...
+echo [STEP 4/6] Checking Model File...
 echo ----------------------------------------
 
-if exist "%MODEL_PATH%" (
-    echo [✓] Model file found
+if exist "backend\models\best_waste_classifier_mobilenet.pth" (
+    echo [✓] Model file found!
 ) else (
     echo [⚠] Model file not found!
     echo.
-    echo [INFO] Attempting to download model from GitHub Releases...
+    echo Model file will be downloaded automatically...
     
-    :: Buat folder models jika belum ada
+    :: Make sure models folder exists
     if not exist "backend\models" mkdir backend\models
     
-    :: Download menggunakan PowerShell
-    powershell -Command "Invoke-WebRequest -Uri '%MODEL_URL%' -OutFile '%MODEL_PATH%'"
+    :: Try to download from your GitHub release
+    echo [INFO] Downloading from GitHub...
+    powershell -Command "& {
+        $url = 'https://github.com/vynnkyboy/CNN-REVISI/releases/download/v1.0.0/best_waste_classifier_mobilenet.pth'
+        $output = 'backend\models\best_waste_classifier_mobilenet.pth'
+        try {
+            Write-Host 'Downloading model... (this may take a few minutes)'
+            Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing
+            if (Test-Path $output) {
+                Write-Host '[✓] Model downloaded successfully!'
+            }
+        } catch {
+            Write-Host '[✗] Auto-download failed'
+        }
+    }"
     
-    if errorlevel 1 (
+    if not exist "backend\models\best_waste_classifier_mobilenet.pth" (
         echo.
-        echo [ERROR] Failed to download model automatically!
+        echo ⚠️  Manual download required:
         echo.
-        echo Please download manually from:
-        echo https://github.com/YOUR_USERNAME/YOUR_REPO/releases
-        echo.
-        echo Then place the file at:
-        echo %MODEL_PATH%
+        echo 1. Go to: https://github.com/vynnkyboy/CNN-REVISI/releases
+        echo 2. Download: best_waste_classifier_mobilenet.pth
+        echo 3. Place in: backend\models\
         echo.
         pause
-    ) else (
-        echo [✓] Model downloaded successfully!
     )
 )
 
 :: ============================================
-:: LAUNCH BACKEND & FRONTEND
+:: STEP 5: CREATE RUN SCRIPT FOR USER
 :: ============================================
 echo.
-echo ╔══════════════════════════════════════════════════════════╗
-echo ║                                                          ║
-echo ║              LAUNCHING WASTE DETECTOR                    ║
-echo ║                                                          ║
-echo ╚══════════════════════════════════════════════════════════╝
-echo.
+echo [STEP 5/6] Creating launch script...
+echo ----------------------------------------
 
-:: Kill existing processes to avoid port conflicts
-echo [INFO] Cleaning up existing processes...
-taskkill /f /im python.exe /fi "windowtitle eq Waste*" > nul 2>&1
-taskkill /f /im node.exe /fi "windowtitle eq Waste*" > nul 2>&1
+:: Create run_local.bat for future use
+(
+echo @echo off
+echo title Waste Detector - Local Run
+echo color 0A
+echo.
+echo echo Starting Waste Detection System...
+echo echo.
+echo cd backend
+echo start "Backend Server" cmd /k "call venv\Scripts\activate ^&^& python app.py"
+echo cd ..
+echo.
+echo timeout /t 3 /nobreak > nul
+echo.
+echo cd frontend
+echo start "Frontend Server" cmd /k "npm run dev"
+echo cd ..
+echo.
+echo echo.
+echo echo Backend:  http://localhost:8000
+echo echo Frontend: http://localhost:5173
+echo echo.
+echo echo Press any key to close...
+echo pause ^> nul
+) > run_local.bat
+
+echo [✓] Created run_local.bat for future use
+
+:: ============================================
+:: STEP 6: START APPLICATION
+:: ============================================
+echo.
+echo [STEP 6/6] Starting Waste Detection System...
+echo ----------------------------------------
+
+:: Kill existing processes
+taskkill /f /im python.exe /fi "windowtitle eq *Backend*" > nul 2>&1
+taskkill /f /im node.exe /fi "windowtitle eq *Frontend*" > nul 2>&1
 timeout /t 2 /nobreak > nul
 
-:: Jalankan backend di window terpisah
-echo [1/2] Starting Backend Server...
-start "Waste Detector Backend" cmd /k "cd backend && echo [BACKEND] Starting server... && call venv\Scripts\activate && python app.py"
+:: Start backend
+start "Waste Detector - Backend" cmd /k "cd backend && call venv\Scripts\activate && python app.py"
 
-:: Tunggu backend siap (5 detik)
-echo [INFO] Waiting for backend to initialize...
+:: Wait for backend
 timeout /t 5 /nobreak > nul
 
-:: Jalankan frontend di window terpisah
-echo [2/2] Starting Frontend Server...
-start "Waste Detector Frontend" cmd /k "cd frontend && echo [FRONTEND] Starting server... && npm run dev"
+:: Start frontend
+start "Waste Detector - Frontend" cmd /k "cd frontend && npm run dev"
 
 echo.
-echo ╔══════════════════════════════════════════════════════════╗
-echo ║                                                          ║
-echo ║                   SYSTEM READY!                          ║
-echo ║                                                          ║
-echo ║  🌐 Backend:  http://localhost:8000                      ║
-echo ║  🌐 Frontend: http://localhost:5173                      ║
-echo ║                                                          ║
-echo ║  📋 API Docs: http://localhost:8000/docs                 ║
-echo ║                                                          ║
-echo ╚══════════════════════════════════════════════════════════╝
+echo ╔════════════════════════════════════════════════════════════════════╗
+echo ║                                                                    ║
+echo ║                    ✅ SETUP COMPLETE! ✅                           ║
+echo ║                                                                    ║
+echo ║  🌐 Backend:  http://localhost:8000                               ║
+echo ║  🌐 Frontend: http://localhost:5173                               ║
+echo ║                                                                    ║
+echo ║  📝 For future use, simply run: run_local.bat                     ║
+echo ║                                                                    ║
+echo ╚════════════════════════════════════════════════════════════════════╝
 echo.
-echo Press any key to close this launcher...
+echo Press any key to close this window (servers keep running)...
 pause > nul
